@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How dnsplain works · dnsplain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../../">dns<span>plain</span></a>
+  <nav class="links">
+    <a href="../../#what">What it does</a>
+    <a href="../../#install">Install</a>
+    <a href="../../docs/" aria-current="page">Docs</a>
+  </nav>
+</div></header>
+<div class="wrap docs">
+  <aside>
+    <h4>Start</h4>
+    <a href="../../docs/">All docs</a>
+    <a href="../../docs/tutorial-first-check.html">Check your first domain</a>
+    <h4>How to</h4>
+    <a href="../../docs/how-to/read-only-aws-access.html">Read-only AWS access</a>
+    <a href="../../docs/how-to/connect-other-providers.html">Other providers</a>
+    <a href="../../docs/how-to/daily-check-alerts.html">Daily check with alerts</a>
+    <h4>Reference</h4>
+    <a href="../../docs/reference/commands.html">Commands</a>
+    <a href="../../docs/reference/checks.html">Checks</a>
+    <a href="../../docs/reference/json-output.html">JSON output</a>
+    <h4>Explanation</h4>
+    <a href="../../docs/explanation/how-dnsplain-works.html">How dnsplain works</a>
+  </aside>
+  <main class="prose">
+<h1 id="how-dnsplain-works">How dnsplain works</h1>
+<p>dnsplain answers two questions about every domain you own: what is
+each record for, and is anything broken. This page explains how it
+reaches those answers, and why it's built to stay quiet unless it's
+sure.</p>
+<h2 id="two-views-of-the-same-domain">Two views of the same domain</h2>
+<p>Your DNS provider holds the records you set. The internet holds what
+resolvers actually answer. Usually the two match. When they don't,
+something is wrong: the zone isn't the one in use, a target was deleted,
+or a sender's key moved.</p>
+<p>So dnsplain reads both:</p>
+<pre><code>provider API ──► records you set ──┐
+                                    ├──► compare ──► findings
+live DNS ──────► what the internet ─┘
+                 answers</code></pre>
+<p>Provider access comes from <a
+href="https://github.com/DNSControl/dnscontrol">dnscontrol</a>, which
+already speaks to 77 providers. dnsplain uses only its read calls:
+listing zones, reading records, and reading the zone's nameservers. One
+package in the code imports dnscontrol, so upgrading it touches one
+file.</p>
+<h2 id="records-become-goals">Records become goals</h2>
+<p>A person thinks "this domain sends mail through Amazon SES". DNS
+stores a TXT record that says
+<code>v=spf1 include:amazonses.com ~all</code>. dnsplain keeps one table
+that maps record patterns to goals: the kind of job (mail, signing,
+website, ownership proof) and the service behind it.</p>
+<p>The same table drives <code>explain</code> and the checks. That keeps
+them from disagreeing about what a record is. Adding a new service is a
+one-line change to the table.</p>
+<h2 id="quiet-unless-sure">Quiet unless sure</h2>
+<p>A tool that cries wolf gets ignored, and a false "critical" sends
+someone to change DNS that was fine. dnsplain follows three rules to
+avoid that:</p>
+<ul>
+<li><strong>A failed lookup is <code>unchecked</code>, never a
+problem.</strong> Timeouts and server failures say "couldn't check", not
+"broken".</li>
+<li><strong>Ask the way a receiver asks.</strong> DKIM is checked by
+requesting the key through your own name, exactly as a mail server
+would. An earlier version looked for an address on the key's host
+instead. It flagged 210 healthy Amazon SES keys, because SES leaves its
+inactive keys as empty text records with no address.</li>
+<li><strong>Every name is fully qualified.</strong> Lookups end with a
+dot, so your computer's search domains can't turn "server failed" into
+"doesn't exist".</li>
+</ul>
+<h2 id="why-read-only-first">Why read-only first</h2>
+<p>Changing DNS is the dangerous half of the job. A wrong write takes a
+website or a mail domain offline. dnsplain earns trust by being right
+about what it reads before it is allowed to write. A future version will
+change records through a fixed path: show the exact changes, wait for
+approval, save a snapshot, apply, then confirm the internet sees the
+change.</p>
+  </main>
+</div>
+<footer class="bottom"><div class="wrap">
+  <span>dnsplain · built on the <a href="https://github.com/DNSControl/dnscontrol">dnscontrol</a> engine</span>
+</div></footer>
+</body>
+</html>

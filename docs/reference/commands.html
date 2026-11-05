@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Command reference · dnsplain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../../">dns<span>plain</span></a>
+  <nav class="links">
+    <a href="../../#what">What it does</a>
+    <a href="../../#install">Install</a>
+    <a href="../../docs/" aria-current="page">Docs</a>
+  </nav>
+</div></header>
+<div class="wrap docs">
+  <aside>
+    <h4>Start</h4>
+    <a href="../../docs/">All docs</a>
+    <a href="../../docs/tutorial-first-check.html">Check your first domain</a>
+    <h4>How to</h4>
+    <a href="../../docs/how-to/read-only-aws-access.html">Read-only AWS access</a>
+    <a href="../../docs/how-to/connect-other-providers.html">Other providers</a>
+    <a href="../../docs/how-to/daily-check-alerts.html">Daily check with alerts</a>
+    <h4>Reference</h4>
+    <a href="../../docs/reference/commands.html">Commands</a>
+    <a href="../../docs/reference/checks.html">Checks</a>
+    <a href="../../docs/reference/json-output.html">JSON output</a>
+    <h4>Explanation</h4>
+    <a href="../../docs/explanation/how-dnsplain-works.html">How dnsplain works</a>
+  </aside>
+  <main class="prose">
+<h1 id="command-reference">Command reference</h1>
+<h2 id="commands">Commands</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dnsplain zones</code></td>
+<td>Lists every domain hosted by the accounts in your credentials</td>
+</tr>
+<tr>
+<td><code>dnsplain explain &lt;domain&gt;</code></td>
+<td>Shows what each record of one domain is for</td>
+</tr>
+<tr>
+<td><code>dnsplain explain --all</code></td>
+<td>Explains every domain and prints how many records were
+recognized</td>
+</tr>
+<tr>
+<td><code>dnsplain check &lt;domain&gt;</code></td>
+<td>Checks one domain for problems</td>
+</tr>
+<tr>
+<td><code>dnsplain check --all</code></td>
+<td>Checks every domain</td>
+</tr>
+<tr>
+<td><code>dnsplain help</code></td>
+<td>Prints usage</td>
+</tr>
+</tbody>
+</table>
+<p>Name one domain or use <code>--all</code>. Doing both is an
+error.</p>
+<h2 id="flags">Flags</h2>
+<p>Flags can go before or after the domain. Everything after
+<code>--</code> is treated as a domain, not a flag.</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--creds &lt;file&gt;</code></td>
+<td>Path to a dnscontrol-format <code>creds.json</code></td>
+</tr>
+<tr>
+<td><code>--all</code></td>
+<td>Run on every domain</td>
+</tr>
+<tr>
+<td><code>--json</code></td>
+<td>Print JSON instead of text. See <a href="json-output.html">JSON
+output</a>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="where-credentials-come-from">Where credentials come from</h2>
+<p>dnsplain uses the first of these that exists:</p>
+<ol type="1">
+<li>The file given by <code>--creds</code></li>
+<li><code>./creds.json</code></li>
+<li><code>~/.config/dnsplain/creds.json</code></li>
+<li>The AWS SDK's default credentials, used as one Route 53 account
+named <code>aws-default</code></li>
+</ol>
+<h2 id="exit-codes">Exit codes</h2>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>Finished. No critical findings.</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td><code>check</code> found at least one critical problem</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>dnsplain failed: bad arguments, unreadable credentials, or a
+provider error</td>
+</tr>
+</tbody>
+</table>
+<h2 id="supported-providers">Supported providers</h2>
+<p>dnsplain includes every DNS provider dnscontrol supports: 77 in
+dnscontrol v5.7.2. To count them for the version you built:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-c</span> <span class="st">&#39;/providers/[a-z0-9]*&quot;$&#39;</span> <span class="st">&quot;</span><span class="va">$(</span><span class="ex">go</span> list <span class="at">-m</span> <span class="at">-f</span> <span class="st">&#39;{{.Dir}}&#39;</span> github.com/DNSControl/dnscontrol/v5<span class="va">)</span><span class="st">/pkg/providers/_all/all.go&quot;</span></span></code></pre></div>
+  </main>
+</div>
+<footer class="bottom"><div class="wrap">
+  <span>dnsplain · built on the <a href="https://github.com/DNSControl/dnscontrol">dnscontrol</a> engine</span>
+</div></footer>
+</body>
+</html>

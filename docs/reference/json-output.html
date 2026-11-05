@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JSON output reference · dnsplain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../../">dns<span>plain</span></a>
+  <nav class="links">
+    <a href="../../#what">What it does</a>
+    <a href="../../#install">Install</a>
+    <a href="../../docs/" aria-current="page">Docs</a>
+  </nav>
+</div></header>
+<div class="wrap docs">
+  <aside>
+    <h4>Start</h4>
+    <a href="../../docs/">All docs</a>
+    <a href="../../docs/tutorial-first-check.html">Check your first domain</a>
+    <h4>How to</h4>
+    <a href="../../docs/how-to/read-only-aws-access.html">Read-only AWS access</a>
+    <a href="../../docs/how-to/connect-other-providers.html">Other providers</a>
+    <a href="../../docs/how-to/daily-check-alerts.html">Daily check with alerts</a>
+    <h4>Reference</h4>
+    <a href="../../docs/reference/commands.html">Commands</a>
+    <a href="../../docs/reference/checks.html">Checks</a>
+    <a href="../../docs/reference/json-output.html">JSON output</a>
+    <h4>Explanation</h4>
+    <a href="../../docs/explanation/how-dnsplain-works.html">How dnsplain works</a>
+  </aside>
+  <main class="prose">
+<h1 id="json-output-reference">JSON output reference</h1>
+<p>Add <code>--json</code> to any command. Output is one JSON value on
+one line.</p>
+<h2 id="zones">zones</h2>
+<p>An array with one object per domain:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Domain</code></td>
+<td>string</td>
+<td><code>"example.com"</code></td>
+</tr>
+<tr>
+<td><code>Account</code></td>
+<td>string</td>
+<td><code>"aws-default"</code></td>
+</tr>
+<tr>
+<td><code>Provider</code></td>
+<td>string</td>
+<td><code>"ROUTE53"</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="explain">explain</h2>
+<p>An array with one object per domain. <code>Intents[i]</code> explains
+<code>Zone.Records[i]</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Zone.Domain</code></td>
+<td>string</td>
+<td>The domain</td>
+</tr>
+<tr>
+<td><code>Zone.Provider</code></td>
+<td>string</td>
+<td>dnscontrol provider type</td>
+</tr>
+<tr>
+<td><code>Zone.Nameservers</code></td>
+<td>string array</td>
+<td>Nameservers the provider reports, may be empty</td>
+</tr>
+<tr>
+<td><code>Zone.Records[].Name</code></td>
+<td>string</td>
+<td>Full name, lowercase, no trailing dot</td>
+</tr>
+<tr>
+<td><code>Zone.Records[].Type</code></td>
+<td>string</td>
+<td><code>A</code>, <code>CNAME</code>, <code>TXT</code>,
+<code>R53_ALIAS</code> and so on</td>
+</tr>
+<tr>
+<td><code>Zone.Records[].Value</code></td>
+<td>string</td>
+<td>Target, address or joined TXT text</td>
+</tr>
+<tr>
+<td><code>Intents[].Kind</code></td>
+<td>string</td>
+<td>See the kinds below</td>
+</tr>
+<tr>
+<td><code>Intents[].Service</code></td>
+<td>string</td>
+<td>Company behind the record, empty when unknown</td>
+</tr>
+<tr>
+<td><code>Intents[].What</code></td>
+<td>string</td>
+<td>One plain sentence</td>
+</tr>
+</tbody>
+</table>
+<p>Kinds: <code>nameserver</code>, <code>mail-in</code>,
+<code>mail-bounce</code>, <code>spf</code>, <code>dkim</code>,
+<code>dmarc</code>, <code>mail-policy</code>, <code>mail-brand</code>,
+<code>web</code>, <code>verification</code>, <code>certificate</code>,
+<code>cert-policy</code>, <code>infrastructure</code>,
+<code>unknown</code>.</p>
+<h2 id="check">check</h2>
+<p>An array with one object per domain:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Domain</code></td>
+<td>string</td>
+<td>The domain</td>
+</tr>
+<tr>
+<td><code>Provider</code></td>
+<td>string</td>
+<td>dnscontrol provider type</td>
+</tr>
+<tr>
+<td><code>Findings[].Check</code></td>
+<td>string</td>
+<td><code>delegation</code>, <code>spf</code>, <code>dkim</code>,
+<code>dmarc</code> or <code>dangling</code></td>
+</tr>
+<tr>
+<td><code>Findings[].Severity</code></td>
+<td>string</td>
+<td><code>critical</code>, <code>warn</code>, <code>info</code> or
+<code>unchecked</code></td>
+</tr>
+<tr>
+<td><code>Findings[].Name</code></td>
+<td>string</td>
+<td>The record or domain the finding is about</td>
+</tr>
+<tr>
+<td><code>Findings[].Why</code></td>
+<td>string</td>
+<td>What's wrong and why it matters</td>
+</tr>
+<tr>
+<td><code>Findings[].Fix</code></td>
+<td>string</td>
+<td>What to change</td>
+</tr>
+</tbody>
+</table>
+<p><code>Findings</code> is <code>null</code> when a domain has no
+findings.</p>
+<h2 id="example-list-criticals-with-jq">Example: list criticals with
+jq</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dnsplain</span> check <span class="at">--all</span> <span class="at">--json</span> <span class="kw">|</span> <span class="ex">jq</span> <span class="at">-r</span> <span class="st">&#39;.[] | .Domain as $d | (.Findings // [])[] | select(.Severity==&quot;critical&quot;) | &quot;\($d) \(.Check) \(.Name)&quot;&#39;</span></span></code></pre></div>
+  </main>
+</div>
+<footer class="bottom"><div class="wrap">
+  <span>dnsplain · built on the <a href="https://github.com/DNSControl/dnscontrol">dnscontrol</a> engine</span>
+</div></footer>
+</body>
+</html>

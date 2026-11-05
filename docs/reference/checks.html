@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Checks reference · dnsplain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../../">dns<span>plain</span></a>
+  <nav class="links">
+    <a href="../../#what">What it does</a>
+    <a href="../../#install">Install</a>
+    <a href="../../docs/" aria-current="page">Docs</a>
+  </nav>
+</div></header>
+<div class="wrap docs">
+  <aside>
+    <h4>Start</h4>
+    <a href="../../docs/">All docs</a>
+    <a href="../../docs/tutorial-first-check.html">Check your first domain</a>
+    <h4>How to</h4>
+    <a href="../../docs/how-to/read-only-aws-access.html">Read-only AWS access</a>
+    <a href="../../docs/how-to/connect-other-providers.html">Other providers</a>
+    <a href="../../docs/how-to/daily-check-alerts.html">Daily check with alerts</a>
+    <h4>Reference</h4>
+    <a href="../../docs/reference/commands.html">Commands</a>
+    <a href="../../docs/reference/checks.html">Checks</a>
+    <a href="../../docs/reference/json-output.html">JSON output</a>
+    <h4>Explanation</h4>
+    <a href="../../docs/explanation/how-dnsplain-works.html">How dnsplain works</a>
+  </aside>
+  <main class="prose">
+<h1 id="checks-reference">Checks reference</h1>
+<p>Every finding has a check name, a severity, the record's name, a
+reason and a fix.</p>
+<h2 id="severities">Severities</h2>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Meaning</th>
+<th>Changes the exit code</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>critical</code></td>
+<td>Something is broken now, or anyone can take it over</td>
+<td>Yes, exit <code>1</code></td>
+</tr>
+<tr>
+<td><code>warn</code></td>
+<td>Broken, but low risk, or close to breaking</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>info</code></td>
+<td>Works, but weaker than it should be</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>unchecked</code></td>
+<td>A DNS lookup failed, so the check couldn't decide</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>A failed lookup is always <code>unchecked</code>, never a
+problem.</p>
+<h2 id="delegation">delegation</h2>
+<p>Compares the nameservers your provider says it uses with the ones the
+internet uses.</p>
+<table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The internet uses different nameservers, so the zone has no
+effect</td>
+<td>critical</td>
+</tr>
+<tr>
+<td>The domain has no nameservers or isn't registered</td>
+<td>critical</td>
+</tr>
+<tr>
+<td>The provider didn't report nameservers</td>
+<td>unchecked</td>
+</tr>
+</tbody>
+</table>
+<p>Zones under a private name, such as <code>corp.internal</code>, are
+skipped. A private Route 53 zone under a real name, such as
+<code>corp.example.com</code>, reports no nameservers, so it shows as
+<code>unchecked</code>.</p>
+<h2 id="spf">spf</h2>
+<p>Reads every SPF record (<code>v=spf1</code>) in the zone and follows
+<code>include</code> and <code>redirect</code> the way a mail receiver
+does.</p>
+<table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Two or more SPF records on one name</td>
+<td>critical</td>
+</tr>
+<tr>
+<td>The record allows every server (<code>+all</code> or a bare
+<code>all</code>)</td>
+<td>critical</td>
+</tr>
+<tr>
+<td>An <code>include</code> or <code>redirect</code> target has no SPF
+record</td>
+<td>critical</td>
+</tr>
+<tr>
+<td>More than 10 DNS lookups</td>
+<td>critical</td>
+</tr>
+<tr>
+<td>8 to 10 DNS lookups</td>
+<td>warn</td>
+</tr>
+</tbody>
+</table>
+<p>Counted as lookups: <code>include</code>, <code>redirect</code>,
+<code>a</code>, <code>mx</code>, <code>ptr</code> and
+<code>exists</code>, including the ones inside included records.
+<code>redirect</code> is ignored when the record also has
+<code>all</code>. A macro include such as
+<code>include:%{d}.spf.example.com</code> counts as one lookup and isn't
+followed.</p>
+<h2 id="dkim">dkim</h2>
+<p>For each DKIM CNAME, asks for the signing key through your own name,
+the way a receiver does.</p>
+<table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The key's name doesn't exist</td>
+<td>warn</td>
+</tr>
+</tbody>
+</table>
+<p>An empty key counts as present. Amazon SES publishes three keys per
+domain and leaves the inactive ones empty.</p>
+<h2 id="dmarc">dmarc</h2>
+<table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The domain sends mail (it has SPF, DKIM or a bounce domain) and no
+DMARC record answers</td>
+<td>warn</td>
+</tr>
+<tr>
+<td>A DMARC record uses <code>p=none</code></td>
+<td>info</td>
+</tr>
+</tbody>
+</table>
+<p>DMARC is read from live DNS, so a <code>_dmarc</code> CNAME to a
+DMARC service counts. A subdomain zone is covered by its parent domain's
+DMARC.</p>
+<h2 id="dangling">dangling</h2>
+<p>For each CNAME that points a website name at a host, checks that the
+host still exists.</p>
+<table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The target is gone, and anyone can claim it on its service</td>
+<td>critical</td>
+</tr>
+<tr>
+<td>The target is gone</td>
+<td>warn</td>
+</tr>
+</tbody>
+</table>
+<p>Services where a gone target can be claimed: S3 websites, Heroku,
+GitHub Pages, Azure App Service and Cloud Services, Traffic Manager,
+Elastic Beanstalk, Netlify, Surge, Ghost, Shopify, Bitbucket, Fly and
+ReadMe.</p>
+<p>Names that start with an underscore (<code>_mta-sts</code>,
+<code>default._bimi</code>) are skipped. They point at text-only records
+by design.</p>
+  </main>
+</div>
+<footer class="bottom"><div class="wrap">
+  <span>dnsplain · built on the <a href="https://github.com/DNSControl/dnscontrol">dnscontrol</a> engine</span>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How to create a read-only Route 53 policy · dnsplain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../../">dns<span>plain</span></a>
+  <nav class="links">
+    <a href="../../#what">What it does</a>
+    <a href="../../#install">Install</a>
+    <a href="../../docs/" aria-current="page">Docs</a>
+  </nav>
+</div></header>
+<div class="wrap docs">
+  <aside>
+    <h4>Start</h4>
+    <a href="../../docs/">All docs</a>
+    <a href="../../docs/tutorial-first-check.html">Check your first domain</a>
+    <h4>How to</h4>
+    <a href="../../docs/how-to/read-only-aws-access.html">Read-only AWS access</a>
+    <a href="../../docs/how-to/connect-other-providers.html">Other providers</a>
+    <a href="../../docs/how-to/daily-check-alerts.html">Daily check with alerts</a>
+    <h4>Reference</h4>
+    <a href="../../docs/reference/commands.html">Commands</a>
+    <a href="../../docs/reference/checks.html">Checks</a>
+    <a href="../../docs/reference/json-output.html">JSON output</a>
+    <h4>Explanation</h4>
+    <a href="../../docs/explanation/how-dnsplain-works.html">How dnsplain works</a>
+  </aside>
+  <main class="prose">
+<h1 id="how-to-create-a-read-only-route-53-policy">How to create a
+read-only Route 53 policy</h1>
+<p>dnsplain never writes DNS, but your AWS CLI credentials probably can.
+This page gives dnsplain its own credentials that can only read Route
+53.</p>
+<h2 id="the-policy">The policy</h2>
+<p>dnsplain reads through dnscontrol's Route 53 provider, which uses
+three read calls: <code>ListHostedZones</code>,
+<code>ListResourceRecordSets</code> and <code>GetHostedZone</code>.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;Version&quot;</span><span class="fu">:</span> <span class="st">&quot;2012-10-17&quot;</span><span class="fu">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;Statement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;Sid&quot;</span><span class="fu">:</span> <span class="st">&quot;DnsplainReadOnly&quot;</span><span class="fu">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;Effect&quot;</span><span class="fu">:</span> <span class="st">&quot;Allow&quot;</span><span class="fu">,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;Action&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;route53:ListHostedZones&quot;</span><span class="ot">,</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;route53:ListResourceRecordSets&quot;</span><span class="ot">,</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;route53:GetHostedZone&quot;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>      <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;Resource&quot;</span><span class="fu">:</span> <span class="st">&quot;*&quot;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h2 id="steps">Steps</h2>
+<ol type="1">
+<li><p>Save the policy above as
+<code>dnsplain-read.json</code>.</p></li>
+<li><p>Create the policy:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">aws</span> iam create-policy <span class="at">--policy-name</span> dnsplain-read <span class="at">--policy-document</span> file://dnsplain-read.json</span></code></pre></div></li>
+<li><p>Create a user for dnsplain and attach the policy. Replace
+<code>&lt;account-id&gt;</code> with your AWS account ID:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">aws</span> iam create-user <span class="at">--user-name</span> dnsplain</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">aws</span> iam attach-user-policy <span class="at">--user-name</span> dnsplain <span class="at">--policy-arn</span> arn:aws:iam::<span class="op">&lt;</span>account-id<span class="op">&gt;</span>:policy/dnsplain-read</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">aws</span> iam create-access-key <span class="at">--user-name</span> dnsplain</span></code></pre></div></li>
+<li><p>Add a profile for those keys:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">aws</span> configure <span class="at">--profile</span> dnsplain</span></code></pre></div></li>
+<li><p>Point dnsplain at the profile with a <code>creds.json</code>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span> <span class="dt">&quot;r53&quot;</span><span class="fu">:</span> <span class="fu">{</span> <span class="dt">&quot;TYPE&quot;</span><span class="fu">:</span> <span class="st">&quot;ROUTE53&quot;</span><span class="fu">,</span> <span class="dt">&quot;Profile&quot;</span><span class="fu">:</span> <span class="st">&quot;dnsplain&quot;</span> <span class="fu">}</span> <span class="fu">}</span></span></code></pre></div></li>
+<li><p>Run <code>dnsplain zones</code>. If a call is denied, the error
+names the missing action. Add it to the policy and tell us, so this page
+stays correct.</p></li>
+</ol>
+<h2 id="if-you-use-aws-sso">If you use AWS SSO</h2>
+<p>Skip steps 1 to 4. Create a permission set with the same policy, then
+put the SSO profile name in <code>creds.json</code> as
+<code>Profile</code>.</p>
+  </main>
+</div>
+<footer class="bottom"><div class="wrap">
+  <span>dnsplain · built on the <a href="https://github.com/DNSControl/dnscontrol">dnscontrol</a> engine</span>
+</div></footer>
+</body>
+</html>

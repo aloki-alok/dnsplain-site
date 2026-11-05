@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How to connect other DNS providers · dnsplain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../../">dns<span>plain</span></a>
+  <nav class="links">
+    <a href="../../#what">What it does</a>
+    <a href="../../#install">Install</a>
+    <a href="../../docs/" aria-current="page">Docs</a>
+  </nav>
+</div></header>
+<div class="wrap docs">
+  <aside>
+    <h4>Start</h4>
+    <a href="../../docs/">All docs</a>
+    <a href="../../docs/tutorial-first-check.html">Check your first domain</a>
+    <h4>How to</h4>
+    <a href="../../docs/how-to/read-only-aws-access.html">Read-only AWS access</a>
+    <a href="../../docs/how-to/connect-other-providers.html">Other providers</a>
+    <a href="../../docs/how-to/daily-check-alerts.html">Daily check with alerts</a>
+    <h4>Reference</h4>
+    <a href="../../docs/reference/commands.html">Commands</a>
+    <a href="../../docs/reference/checks.html">Checks</a>
+    <a href="../../docs/reference/json-output.html">JSON output</a>
+    <h4>Explanation</h4>
+    <a href="../../docs/explanation/how-dnsplain-works.html">How dnsplain works</a>
+  </aside>
+  <main class="prose">
+<h1 id="how-to-connect-other-dns-providers">How to connect other DNS
+providers</h1>
+<p>dnsplain reads any provider that dnscontrol supports. You list your
+accounts in a <code>creds.json</code>, in the same format dnscontrol
+uses.</p>
+<h2 id="steps">Steps</h2>
+<ol type="1">
+<li><p>Create <code>~/.config/dnsplain/creds.json</code>. dnsplain also
+reads <code>./creds.json</code> in the folder you run it from.</p></li>
+<li><p>Add one entry per account. The key is a name you choose.
+<code>TYPE</code> is the provider:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;cloudflare&quot;</span><span class="fu">:</span> <span class="fu">{</span> <span class="dt">&quot;TYPE&quot;</span><span class="fu">:</span> <span class="st">&quot;CLOUDFLAREAPI&quot;</span><span class="fu">,</span> <span class="dt">&quot;apitoken&quot;</span><span class="fu">:</span> <span class="st">&quot;$CLOUDFLARE_API_TOKEN&quot;</span> <span class="fu">},</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;namecheap&quot;</span><span class="fu">:</span>  <span class="fu">{</span> <span class="dt">&quot;TYPE&quot;</span><span class="fu">:</span> <span class="st">&quot;NAMECHEAP&quot;</span><span class="fu">,</span> <span class="dt">&quot;apikey&quot;</span><span class="fu">:</span> <span class="st">&quot;$NAMECHEAP_API_KEY&quot;</span><span class="fu">,</span> <span class="dt">&quot;apiuser&quot;</span><span class="fu">:</span> <span class="st">&quot;you&quot;</span> <span class="fu">},</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;aws&quot;</span><span class="fu">:</span>        <span class="fu">{</span> <span class="dt">&quot;TYPE&quot;</span><span class="fu">:</span> <span class="st">&quot;ROUTE53&quot;</span><span class="fu">,</span> <span class="dt">&quot;Profile&quot;</span><span class="fu">:</span> <span class="st">&quot;dnsplain&quot;</span> <span class="fu">}</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div></li>
+<li><p>Keep secrets out of the file. A value that starts with
+<code>$</code> is read from that environment variable.</p></li>
+<li><p>Run <code>dnsplain zones</code>. You see every domain from every
+account.</p></li>
+</ol>
+<h2 id="keys-for-common-providers">Keys for common providers</h2>
+<p>Use the least access each provider allows.</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>TYPE</th>
+<th>Read-only access</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AWS Route 53</td>
+<td><code>ROUTE53</code></td>
+<td><a href="read-only-aws-access.html">Read-only Route 53
+policy</a></td>
+</tr>
+<tr>
+<td>Cloudflare</td>
+<td><code>CLOUDFLAREAPI</code></td>
+<td>API token with <strong>Zone: Read</strong> and <strong>DNS:
+Read</strong></td>
+</tr>
+<tr>
+<td>Namecheap</td>
+<td><code>NAMECHEAP</code></td>
+<td>API access must be enabled on the account, and your IP must be on
+its allow list</td>
+</tr>
+<tr>
+<td>DigitalOcean</td>
+<td><code>DIGITALOCEAN</code></td>
+<td>Token with read scope</td>
+</tr>
+</tbody>
+</table>
+<p>For every other provider and its fields, see <a
+href="https://docs.dnscontrol.org/provider/index">dnscontrol's provider
+list</a>.</p>
+<h2 id="limits-to-know">Limits to know</h2>
+<ul>
+<li><strong>GoDaddy</strong> only gives API access to accounts with 50
+or more domains.</li>
+<li><strong>Hostinger</strong> has no dnscontrol provider yet. If a
+domain is registered at Hostinger but its nameservers point to Route 53
+or Cloudflare, connect that provider instead. The records live
+there.</li>
+<li>A provider without a "list zones" API is skipped by
+<code>zones</code> and <code>--all</code>, with a note. You can still
+name its domains one at a time.</li>
+<li>An entry whose type is registrar-only (it holds no zones) is
+skipped.</li>
+</ul>
+  </main>
+</div>
+<footer class="bottom"><div class="wrap">
+  <span>dnsplain · built on the <a href="https://github.com/DNSControl/dnscontrol">dnscontrol</a> engine</span>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tutorial: check your first domain · dnsplain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="../">dns<span>plain</span></a>
+  <nav class="links">
+    <a href="../#what">What it does</a>
+    <a href="../#install">Install</a>
+    <a href="../docs/" aria-current="page">Docs</a>
+  </nav>
+</div></header>
+<div class="wrap docs">
+  <aside>
+    <h4>Start</h4>
+    <a href="../docs/">All docs</a>
+    <a href="../docs/tutorial-first-check.html">Check your first domain</a>
+    <h4>How to</h4>
+    <a href="../docs/how-to/read-only-aws-access.html">Read-only AWS access</a>
+    <a href="../docs/how-to/connect-other-providers.html">Other providers</a>
+    <a href="../docs/how-to/daily-check-alerts.html">Daily check with alerts</a>
+    <h4>Reference</h4>
+    <a href="../docs/reference/commands.html">Commands</a>
+    <a href="../docs/reference/checks.html">Checks</a>
+    <a href="../docs/reference/json-output.html">JSON output</a>
+    <h4>Explanation</h4>
+    <a href="../docs/explanation/how-dnsplain-works.html">How dnsplain works</a>
+  </aside>
+  <main class="prose">
+<h1 id="tutorial-check-your-first-domain">Tutorial: check your first
+domain</h1>
+<p>In this tutorial you install dnsplain, list your domains, read what
+one domain's records do, and check it for problems. It takes about five
+minutes. You need Go 1.27 or later and an AWS account whose Route 53
+holds at least one domain.</p>
+<p>dnsplain only reads. Nothing in this tutorial changes your DNS.</p>
+<h2 id="1-install">1. Install</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">go</span> install github.com/aloki-alok/dnsplain/cmd/dnsplain@latest</span></code></pre></div>
+<p>Check that it runs:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dnsplain</span> help</span></code></pre></div>
+<h2 id="2-list-your-domains">2. List your domains</h2>
+<p>If the AWS CLI works on your machine, dnsplain already has access.
+Run:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dnsplain</span> zones</span></code></pre></div>
+<p>You see one line per domain:</p>
+<pre><code>example.com                  ROUTE53 (aws-default)
+example.org                  ROUTE53 (aws-default)</code></pre>
+<p><code>aws-default</code> means dnsplain used your AWS CLI
+credentials, because it found no <code>creds.json</code>.</p>
+<p>If you see an error about credentials, run
+<code>aws sts get-caller-identity</code> first. When that works,
+dnsplain works too.</p>
+<h2 id="3-see-what-each-record-is-for">3. See what each record is
+for</h2>
+<p>Pick one domain from the list:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dnsplain</span> explain example.com</span></code></pre></div>
+<p>dnsplain groups the records by the job they do:</p>
+<pre><code>example.com  ROUTE53 · 64 records · 64 explained
+  web           points to CloudFront on 2 names: @, www
+  mail-in       Google Workspace receives mail on 2 names: @, alerts
+  spf           Allows Google Workspace to send mail as example.com.
+  dkim          Amazon SES signing keys on 33 names: ...
+  dmarc         DMARC policy &quot;none&quot; for example.com: only reports spoofed mail, still delivers it.</code></pre>
+<p>A line marked <code>unexplained</code> is a record dnsplain doesn't
+recognize yet. It's shown with its raw value so nothing is hidden.</p>
+<h2 id="4-check-it-for-problems">4. Check it for problems</h2>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dnsplain</span> check example.com</span></code></pre></div>
+<p>For each problem, dnsplain says what's wrong, why it matters, and how
+to fix it:</p>
+<pre><code>example.com  ROUTE53
+  warn      dangling   nlp.example.com
+            nlp.example.com points to x-nlp.elb.ap-south-1.amazonaws.com, which doesn&#39;t exist. Visitors get an error.
+            fix: Delete this CNAME, or point it at a live host.
+
+0 critical, 1 warn, 0 info, 0 unchecked across 1 domains</code></pre>
+<p>When the domain is healthy, you see
+<code>ok, no problems found</code>.</p>
+<h2 id="5-check-everything">5. Check everything</h2>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dnsplain</span> check <span class="at">--all</span></span></code></pre></div>
+<h2 id="next-steps">Next steps</h2>
+<ul>
+<li><a href="how-to/read-only-aws-access.html">Create a read-only AWS
+policy</a>, so dnsplain never runs with more access than it needs.</li>
+<li><a href="how-to/daily-check-alerts.html">Run the check every day</a>
+and get an alert only when something breaks.</li>
+<li>Learn <a href="reference/checks.html">what each finding
+means</a>.</li>
+</ul>
+  </main>
+</div>
+<footer class="bottom"><div class="wrap">
+  <span>dnsplain · built on the <a href="https://github.com/DNSControl/dnscontrol">dnscontrol</a> engine</span>
+</div></footer>
+</body>
+</html>
