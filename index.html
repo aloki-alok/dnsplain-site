@@ -3,103 +3,71 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>dnsplain</title>
-<meta name="description" content="Find every domain you own, see what each DNS record is for, and catch problems before mail lands in spam or a subdomain gets taken over.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="style.css">
+<title>dnsplain · dnsplain</title>
+<link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<header class="top"><div class="wrap">
-  <a class="brand" href="./">dns<span>plain</span></a>
-  <nav class="links">
-    <a href="#what">What it does</a>
-    <a href="#install">Install</a>
-    <a href="docs/">Docs</a>
-  </nav>
-</div></header>
+<div class="wrap">
+  <nav><a href="./"><b>dnsplain</b></a> · <a href="./docs/">docs</a></nav>
+  <article>
+    <div class="file">index.md</div>
+    <div class="md">
+<h1 id="dnsplain">dnsplain</h1>
+<p>Find every domain you own, see what each DNS record is for, and catch
+problems before your mail lands in spam or someone takes over a
+subdomain.</p>
+<p>dnsplain reads from 77 DNS providers through the <a
+href="https://github.com/DNSControl/dnscontrol">dnscontrol</a> engine.
+It only reads. It never changes your DNS.</p>
+<h2 id="install">Install</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">go</span> install github.com/aloki-alok/dnsplain/cmd/dnsplain@latest</span></code></pre></div>
+<p>The code repository is private during early access.</p>
+<h2 id="commands">Commands</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dnsplain zones</code></td>
+<td>Lists every domain your provider accounts host</td>
+</tr>
+<tr>
+<td><code>dnsplain explain &lt;domain&gt;</code></td>
+<td>Says what each record is for, in plain words</td>
+</tr>
+<tr>
+<td><code>dnsplain check &lt;domain&gt;</code></td>
+<td>Finds broken delegation, SPF, DKIM, DMARC and dangling CNAMEs. Use
+<code>--all</code> for every domain.</td>
+</tr>
+</tbody>
+</table>
+<p>If you use AWS, there's nothing to set up. Other providers need a
+<code>creds.json</code>: see <a
+href="docs/how-to/connect-other-providers.html">Connect other
+providers</a>.</p>
+<h2 id="example">Example</h2>
+<pre><code>$ dnsplain check example.com
+example.com  ROUTE53
+  warn      dangling   old.example.com
+            points to a host that no longer exists. Visitors get an error.
+            fix: Delete this CNAME, or point it at a live host.
 
-<main>
-<div class="wrap hero">
-  <div>
-    <span class="rt">v1 · read-only</span>
-    <h1>Know what every DNS record does, and what's broken.</h1>
-    <p>dnsplain reads your zones from 77 DNS providers, explains each record in plain words, and checks every domain against what the internet actually answers.</p>
-    <div class="cta">
-      <a class="btn primary" href="docs/tutorial-first-check.html">Check your first domain</a>
-      <a class="btn" href="docs/">Read the docs</a>
+0 critical, 1 warn, 0 info, 0 unchecked across 1 domains</code></pre>
+<p>If a lookup fails, the check shows as <code>unchecked</code>.
+dnsplain never guesses.</p>
+<h2 id="next">Next</h2>
+<ul>
+<li><a href="docs/tutorial-first-check.html">Check your first
+domain</a></li>
+<li><a href="docs/index.html">All docs</a></li>
+</ul>
     </div>
-  </div>
-  <div class="term" aria-label="Example output of dnsplain check">
-    <div class="bar"><i></i><i></i><i></i></div>
-<pre><span class="t-dim">$</span> dnsplain check --all
-
-<span class="t-acc">example.com</span>  ROUTE53
-  <span class="t-bad">critical</span>  dangling   old.example.com
-            points to an S3 website bucket that no
-            longer exists. Anyone can claim that bucket
-            and serve their own pages on your domain.
-            <span class="t-dim">fix: Delete this CNAME now.</span>
-  <span class="t-warn">warn</span>      spf        example.com
-            needs 9 of 10 allowed DNS lookups.
-            <span class="t-dim">fix: Remove senders you no longer use.</span>
-
-<span class="t-acc">example.org</span>  CLOUDFLAREAPI  <span class="t-ok">ok, no problems found</span>
-
-1 critical, 1 warn, 0 info, 0 unchecked across 2 domains</pre>
-  </div>
+  </article>
 </div>
-
-<section class="band" id="what"><div class="wrap">
-  <span class="rt">IN TXT</span>
-  <h2>Three commands, one picture of your DNS</h2>
-  <p class="lede">Records are written for machines. dnsplain turns them back into the goals they serve, then tells you where reality doesn't match.</p>
-  <div class="rows">
-    <div class="row"><b>zones</b><p><strong>Find every domain you own.</strong> Connect your provider accounts once and see each domain, the provider that hosts it, and the account it lives in.</p></div>
-    <div class="row"><b>explain</b><p><strong>See what each record is for.</strong> "Amazon SES signing keys on 33 names", "points to CloudFront on @ and www", "Proves to Google that you own this domain".</p></div>
-    <div class="row"><b>check</b><p><strong>Catch problems before they cost you.</strong> Zones the internet doesn't use, broken SPF, missing DKIM keys, mail domains with no DMARC, and CNAMEs to deleted hosts that anyone can claim.</p></div>
-  </div>
-</div></section>
-
-<section class="band"><div class="wrap">
-  <span class="rt">SOA</span>
-  <h2>Quiet unless it's sure</h2>
-  <p class="lede">A tool that cries wolf gets ignored. A false "critical" sends someone to change DNS that was fine. So dnsplain follows three rules.</p>
-  <div class="grid3">
-    <div class="card"><h3>A failed lookup is "unchecked"</h3><p>Timeouts and server failures never turn into findings. You see "couldn't check", with the reason.</p></div>
-    <div class="card"><h3>It asks the way a receiver asks</h3><p>DKIM keys are requested through your own name, exactly as a mail server does. SPF lookups are counted by the RFC's rules.</p></div>
-    <div class="card"><h3>It never writes</h3><p>v1 only reads. Use read-only keys: the docs give an AWS policy with exactly the three calls it needs.</p></div>
-  </div>
-</div></section>
-
-<section class="band install" id="install"><div class="wrap">
-  <span class="rt">A</span>
-  <h2>Install and run</h2>
-  <p class="lede">One Go binary. If your AWS CLI works, there's nothing else to set up. Other providers use a dnscontrol-format <code>creds.json</code>.</p>
-<pre>go install github.com/aloki-alok/dnsplain/cmd/dnsplain@latest
-dnsplain zones
-dnsplain explain example.com
-dnsplain check --all</pre>
-  <p class="lede">The repository is private during early access. <code>check</code> exits <code>1</code> on any critical finding, so it drops into cron or CI as is.</p>
-</div></section>
-
-<section class="band"><div class="wrap">
-  <span class="rt">NS</span>
-  <h2>Where it's going</h2>
-  <p class="lede">Reading comes first because changing DNS is the dangerous half. Each step ships when the one before it has run clean on real domains.</p>
-  <div class="roadmap">
-    <div class="step now"><b>NOW</b><h3>Find, explain, check</h3><p>Read-only, 77 providers, plain findings with fixes.</p></div>
-    <div class="step"><b>NEXT</b><h3>Safe changes</h3><p>Show the exact diff, approve, snapshot, apply, then confirm the internet sees it. Undo in one step.</p></div>
-    <div class="step"><b>THEN</b><h3>Recipes</h3><p>"Set up mail through SES on these 30 domains." The right records for each provider.</p></div>
-    <div class="step"><b>LATER</b><h3>For agents</h3><p>An MCP server, so AI agents change DNS through the same preview and approval.</p></div>
-  </div>
-</div></section>
-</main>
-
-<footer class="bottom"><div class="wrap">
-  <span>dnsplain · built on the <a href="https://github.com/DNSControl/dnscontrol">dnscontrol</a> engine</span>
-  <span><a href="docs/">Docs</a> · <a href="docs/reference/checks.html">Checks</a> · <a href="docs/explanation/how-dnsplain-works.html">How it works</a></span>
-</div></footer>
 </body>
 </html>

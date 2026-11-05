@@ -4,37 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>JSON output reference · dnsplain</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
-<header class="top"><div class="wrap">
-  <a class="brand" href="../../">dns<span>plain</span></a>
-  <nav class="links">
-    <a href="../../#what">What it does</a>
-    <a href="../../#install">Install</a>
-    <a href="../../docs/" aria-current="page">Docs</a>
-  </nav>
-</div></header>
-<div class="wrap docs">
-  <aside>
-    <h4>Start</h4>
-    <a href="../../docs/">All docs</a>
-    <a href="../../docs/tutorial-first-check.html">Check your first domain</a>
-    <h4>How to</h4>
-    <a href="../../docs/how-to/read-only-aws-access.html">Read-only AWS access</a>
-    <a href="../../docs/how-to/connect-other-providers.html">Other providers</a>
-    <a href="../../docs/how-to/daily-check-alerts.html">Daily check with alerts</a>
-    <h4>Reference</h4>
-    <a href="../../docs/reference/commands.html">Commands</a>
-    <a href="../../docs/reference/checks.html">Checks</a>
-    <a href="../../docs/reference/json-output.html">JSON output</a>
-    <h4>Explanation</h4>
-    <a href="../../docs/explanation/how-dnsplain-works.html">How dnsplain works</a>
-  </aside>
-  <main class="prose">
+<div class="wrap">
+  <nav><a href="../../"><b>dnsplain</b></a> · <a href="../../docs/">docs</a></nav>
+  <article>
+    <div class="file">docs/reference/json-output.md</div>
+    <div class="md">
 <h1 id="json-output-reference">JSON output reference</h1>
 <p>Add <code>--json</code> to any command. Output is one JSON value on
 one line.</p>
@@ -187,10 +164,8 @@ findings.</p>
 <h2 id="example-list-criticals-with-jq">Example: list criticals with
 jq</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dnsplain</span> check <span class="at">--all</span> <span class="at">--json</span> <span class="kw">|</span> <span class="ex">jq</span> <span class="at">-r</span> <span class="st">&#39;.[] | .Domain as $d | (.Findings // [])[] | select(.Severity==&quot;critical&quot;) | &quot;\($d) \(.Check) \(.Name)&quot;&#39;</span></span></code></pre></div>
-  </main>
+    </div>
+  </article>
 </div>
-<footer class="bottom"><div class="wrap">
-  <span>dnsplain · built on the <a href="https://github.com/DNSControl/dnscontrol">dnscontrol</a> engine</span>
-</div></footer>
 </body>
 </html>
